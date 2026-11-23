@@ -7,11 +7,8 @@ function App() {
   return (
     <BrowserRouter>
       <AuthProvider>
-        <div className="min-h-screen flex flex-col">
-          {/* Navigation */}
+        <div className="site-shell min-h-screen flex flex-col">
           <Navbar />
-
-          {/* Content */}
           <main className="flex-1">
             <AppRouter />
           </main>
