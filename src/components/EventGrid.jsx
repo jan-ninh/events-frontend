@@ -1,22 +1,18 @@
 import { EventCard } from "./EventCard";
 
 export const EventGrid = ({ events = [] }) => {
-  const sortedEvents = [...events].sort((a, b) =>
-    new Date(a.date).getTime() - new Date(b.date).getTime()
-  );
-
-  if (sortedEvents.length === 0) {
+  if (events.length === 0) {
     return (
-      <div className="text-center py-24">
-        <h2 className="text-2xl font-semibold">No events yet</h2>
-        <p className="mt-2 text-base-content/70">Create an event to bring your community together.</p>
+      <div className="home-feedback text-center py-20">
+        <h2 className="text-xl font-semibold">No events yet</h2>
+        <p className="mt-2 text-slate-300">Create an event to bring your community together.</p>
       </div>
     );
   }
 
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 items-stretch gap-8">
-      {sortedEvents.map((event) => (
+    <div className="grid grid-cols-1 gap-7 sm:grid-cols-2 xl:grid-cols-3 items-stretch">
+      {events.map((event) => (
         <EventCard key={event.id} event={event} />
       ))}
     </div>
