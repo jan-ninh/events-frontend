@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useParams, useNavigate, Link } from "react-router";
 import { useAuth } from "../context/useAuth";
+import { useBackendStatus } from "../context/useBackendStatus";
 import { apiConfig } from "../api/apiConfig";
 import { EventService } from "../api/events";
 import { lookupCity } from "../api/geocodeCity";
@@ -24,6 +25,7 @@ export const EventDetails = () => {
   const { id } = useParams();
   const navigate = useNavigate();
   const { token } = useAuth();
+  const { isReady } = useBackendStatus();
   const [registrationState, setRegistrationState] = useState("checking");
   const [registrationError, setRegistrationError] = useState("");
   const [canDelete, setCanDelete] = useState(false);
@@ -34,14 +36,13 @@ export const EventDetails = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   useEffect(() => {
-    if (!id) return;
+    if (!id || !isReady) return;
     const fetchData = async () => {
       setLoading(true);
       setError(null);
 
       try {
         const data = await EventService.getEventById(id);
-        console.log(data);
         if(!data){
           throw new Error(`Failed to load event. Try again later.`);
         }
@@ -54,10 +55,10 @@ export const EventDetails = () => {
       }
     };
     fetchData();
-  }, [id]);
+  }, [id, isReady]);
 
   useEffect(() => {
-    if (!id || !token) {
+    if (!id || !token || !isReady) {
       setRegistrationState("signed-out");
       return;
     }
@@ -74,7 +75,7 @@ export const EventDetails = () => {
       if (active) setRegistrationState("error");
     });
     return () => { active = false; };
-  }, [id, token]);
+  }, [id, token, isReady]);
 
   // Existing events without stored coordinates can still be shown on a city-level map.
   useEffect(() => {
@@ -112,7 +113,7 @@ export const EventDetails = () => {
 
   useEffect(() => {
     setCanDelete(false);
-    if (!id || !token) return;
+    if (!id || !token || !isReady) return;
     const controller = new AbortController();
     fetch(`${apiConfig.baseUrl}/events/${id}/permissions`, {
       headers: { Authorization: `Bearer ${token}` },
@@ -127,10 +128,10 @@ export const EventDetails = () => {
       })
       .catch(() => setCanDelete(false));
     return () => controller.abort();
-  }, [id, token]);
+  }, [id, token, isReady]);
 
   async function deleteEvent() {
-    if (!canDelete || !token || isDeleting) return;
+    if (!isReady || !canDelete || !token || isDeleting) return;
     if (!window.confirm(`Delete "${event.title}" permanently? Registrations will also be deleted.`)) {
       return;
     }
@@ -153,7 +154,7 @@ export const EventDetails = () => {
   }
 
   async function joinEvent() {
-    if (!token) return;
+    if (!token || !isReady) return;
     setRegistrationError("");
     setRegistrationState("joining");
     try {
@@ -179,6 +180,7 @@ export const EventDetails = () => {
   return (
     <>
       <div className="max-w-3xl mx-auto p-4 md:p-8">
+        {!isReady && <div role="status" className="mb-4 rounded-xl border border-cyan-300/30 bg-slate-800 p-4 text-cyan-100">Starting demo server… The event will load automatically.</div>}
         {/* LOADING */}
         {loading && <Loader />}
         {loading && <Skeleton />}
@@ -205,7 +207,7 @@ export const EventDetails = () => {
                   <button
                     type="button"
                     onClick={deleteEvent}
-                    disabled={isDeleting}
+                    disabled={isDeleting || !isReady}
                     className="px-4 py-2 rounded-xl bg-red-600 text-white font-semibold shadow-md hover:bg-red-700 disabled:opacity-60"
                   >
                     {isDeleting ? "Deleting..." : "Delete event"}
@@ -260,7 +262,7 @@ export const EventDetails = () => {
                 <p className="text-sm text-red-700">Could not load your registration. Please sign in again.</p>
               )}
               {registrationState === "available" && (
-                <button onClick={joinEvent} className="rounded-lg bg-blue-700 px-4 py-2 text-white font-semibold">
+                <button onClick={joinEvent} disabled={!isReady} className="rounded-lg bg-blue-700 px-4 py-2 text-white font-semibold">
                   Register for this event
                 </button>
               )}

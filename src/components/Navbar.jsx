@@ -1,9 +1,11 @@
 import { NavLink } from "react-router";
 import logo from "../assets/logo.svg";
 import { useAuth } from "../context/useAuth";
+import { useBackendStatus } from "../context/useBackendStatus";
 
 export const Navbar = () => {
   const { isAuthenticated, user, logout } = useAuth();
+  const { isReady } = useBackendStatus();
   const displayName = user?.email || user?.name || "Logged in";
   const initial = displayName.charAt(0).toUpperCase();
 
@@ -28,10 +30,17 @@ export const Navbar = () => {
         <div className="ml-auto flex shrink-0 items-center gap-2 sm:gap-3">
           {isAuthenticated ? (
             <>
-              <NavLink to="/events/create" className="site-action-primary">
-                <span className="hidden sm:inline">Create event</span>
-                <span className="sm:hidden">Create</span>
-              </NavLink>
+              {isReady ? (
+                <NavLink to="/events/create" className="site-action-primary">
+                  <span className="hidden sm:inline">Create event</span>
+                  <span className="sm:hidden">Create</span>
+                </NavLink>
+              ) : (
+                <span className="site-action-primary cursor-not-allowed opacity-45" aria-disabled="true" title="Available when the demo server is ready">
+                  <span className="hidden sm:inline">Create event</span>
+                  <span className="sm:hidden">Create</span>
+                </span>
+              )}
 
               <div className="site-nav-divider hidden lg:block" aria-hidden="true" />
 
@@ -49,11 +58,20 @@ export const Navbar = () => {
             </>
           ) : (
             <>
-              <NavLink to="/sign-in" className="site-action-secondary">Sign in</NavLink>
-              <NavLink to="/sign-up" className="site-action-primary">
-                <span className="hidden sm:inline">Create account</span>
-                <span className="sm:hidden">Sign up</span>
-              </NavLink>
+              {isReady ? (
+                <>
+                  <NavLink to="/sign-in" className="site-action-secondary">Sign in</NavLink>
+                  <NavLink to="/sign-up" className="site-action-primary">
+                    <span className="hidden sm:inline">Create account</span>
+                    <span className="sm:hidden">Sign up</span>
+                  </NavLink>
+                </>
+              ) : (
+                <>
+                  <span className="site-action-secondary cursor-not-allowed opacity-45" aria-disabled="true">Sign in</span>
+                  <span className="site-action-primary cursor-not-allowed opacity-45" aria-disabled="true">Sign up</span>
+                </>
+              )}
             </>
           )}
         </div>
