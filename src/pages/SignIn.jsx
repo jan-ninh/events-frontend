@@ -4,6 +4,7 @@ import { useNavigate } from "react-router";
 import { validate } from "../api/auth.js";
 import { loginUser, fetchProfile } from "../api/authApi.js";
 import { useAuth } from "../context/useAuth";
+import { useBackendStatus } from "../context/useBackendStatus";
 import SubmitBtn from "../components/SubmitBtn.jsx";
 
 // action Funktion anstelle des Submit Handlers
@@ -73,6 +74,7 @@ async function action(_prevState, formData) {
 
 export const SignIn = () => {
   const { login } = useAuth();
+  const { isReady } = useBackendStatus();
   const navigate = useNavigate();
 
   // Hook verbindet Action-Funktion und Komponenten-State
@@ -106,7 +108,9 @@ export const SignIn = () => {
         )}
 
         {/* Vom Hook vermittelte formAction */}
+        {!isReady && <p role="status" className="text-sm text-cyan-200">Starting demo server… Sign-in will be available shortly.</p>}
         <form action={formAction} className="space-y-4">
+          <fieldset disabled={!isReady || isPending} className="space-y-4 disabled:opacity-60">
           <div>
             <label
               className="block text-sm font-medium text-gray-700"
@@ -144,6 +148,7 @@ export const SignIn = () => {
           </div>
 
           <SubmitBtn />
+          </fieldset>
           {state.error && (
             <p className="text-sm text-red-600 mt-1">
               Email or Password not correct!
