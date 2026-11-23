@@ -4,7 +4,7 @@
 
 **Events entdecken, erstellen und sich dafür anmelden.** Evendule verbindet ein React-Frontend mit einer eigenen Express-/SQLite-API. Das Ergebnis ist eine durchgängige Fullstack-Anwendung mit Login, Event-Verwaltung, Teilnehmeranmeldung und relationaler Datenhaltung.
 
-**[Backend & SQL ansehen](https://github.com/jan-ninh/events-api-jan)** · **[Frontend-Code ansehen](https://github.com/jan-ninh/events-frontend/tree/main/src)**
+**[Live-Demo ausprobieren](https://evendule-live-jan.onrender.com)** · **[Backend & SQL ansehen](https://github.com/jan-ninh/events-api-jan)** · **[Frontend-Code ansehen](https://github.com/jan-ninh/events-frontend/tree/main/src)**
 
 ![Evendule – Startseite mit drei Demo-Events, Sortierung und unterschiedlichen Eventbildern](docs/screenshots/evendule-home.webp)
 
@@ -93,6 +93,8 @@ Die Vorgänge werden im eigenen SQLite-Backend gespeichert. Die Anmeldung wird a
 
 ## Projektstatus
 
-**Lokal lauffähige Fullstack-Arbeitsprobe.** Der Frontend-Build und die Backend-Tests werden über GitHub Actions überprüft. Die Kernabläufe wurden in der lokalen Browseranwendung getestet. Ein öffentlich betriebener Server ist derzeit nicht Teil dieser Demo.
+**Öffentlich erreichbare Fullstack-Live-Demo:** [Evendule auf Render](https://evendule-live-jan.onrender.com). Die React-Oberfläche läuft als Static Site, die Express-/SQLite-API auf einem kostenlosen Render-Web-Service. Die Online-Datenbank ist bewusst temporär: Nach einem Neustart werden die drei Beispielveranstaltungen automatisch wiederhergestellt, während zusätzlich angelegte Konten, Events und Anmeldungen zurückgesetzt werden können. Bitte nur fiktive Daten verwenden. Nach Inaktivität kann das Backend beim ersten Zugriff eine Startphase benötigen; die App zeigt den Status an und aktiviert Aktionen erst nach erfolgreicher Verbindung. Die lokale Version nutzt weiterhin eine dateibasierte SQLite-Datenbank.
+
+Der Frontend-Build und die Backend-Tests werden über GitHub Actions überprüft. Die Kernabläufe wurden lokal und in der öffentlichen Demo ausprobiert.
 
 Die ursprüngliche Teamarbeit bleibt durch den [Fork von Darias Repository](https://github.com/DariaKozlova-web/events-frontend) und seine Git-Historie transparent zugeordnet.
