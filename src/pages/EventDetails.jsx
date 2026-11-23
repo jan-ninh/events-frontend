@@ -26,6 +26,9 @@ export const EventDetails = () => {
   const { token } = useAuth();
   const [registrationState, setRegistrationState] = useState("checking");
   const [registrationError, setRegistrationError] = useState("");
+  const [canDelete, setCanDelete] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
+  const [deleteError, setDeleteError] = useState("");
   const [event, setEvent] = useState(null);
   const [map, setMap] = useState({ status: "loading", coords: null, approximate: false });
   const [loading, setLoading] = useState(false);
@@ -107,6 +110,48 @@ export const EventDetails = () => {
     };
   }, [event]);
 
+  useEffect(() => {
+    setCanDelete(false);
+    if (!id || !token) return;
+    const controller = new AbortController();
+    fetch(`${apiConfig.baseUrl}/events/${id}/permissions`, {
+      headers: { Authorization: `Bearer ${token}` },
+      signal: controller.signal,
+    })
+      .then(async (response) => {
+        if (!response.ok) throw new Error("Permission lookup failed");
+        return response.json();
+      })
+      .then((permissions) => {
+        if (!controller.signal.aborted) setCanDelete(permissions.canDelete === true);
+      })
+      .catch(() => setCanDelete(false));
+    return () => controller.abort();
+  }, [id, token]);
+
+  async function deleteEvent() {
+    if (!canDelete || !token || isDeleting) return;
+    if (!window.confirm(`Delete "${event.title}" permanently? Registrations will also be deleted.`)) {
+      return;
+    }
+    setDeleteError("");
+    setIsDeleting(true);
+    try {
+      const response = await fetch(`${apiConfig.baseUrl}/events/${id}`, {
+        method: "DELETE",
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      if (response.status !== 204) {
+        const data = await response.json().catch(() => ({}));
+        throw new Error(data.error || "Could not delete event");
+      }
+      navigate("/", { replace: true });
+    } catch (err) {
+      setDeleteError(err.message || "Could not delete event");
+      setIsDeleting(false);
+    }
+  }
+
   async function joinEvent() {
     if (!token) return;
     setRegistrationError("");
@@ -155,13 +200,31 @@ export const EventDetails = () => {
                 {event.title}
               </h1>
 
-              <button
-                onClick={() => navigate(-1)}
-                className="px-4 py-2 rounded-xl bg-evGreen text-gray-900 font-semibold shadow-md hover:bg-evGreen-dark transition-all"
-              >
-                ⬅ Back
-              </button>
+              <div className="flex flex-wrap items-center gap-2">
+                {canDelete && (
+                  <button
+                    type="button"
+                    onClick={deleteEvent}
+                    disabled={isDeleting}
+                    className="px-4 py-2 rounded-xl bg-red-600 text-white font-semibold shadow-md hover:bg-red-700 disabled:opacity-60"
+                  >
+                    {isDeleting ? "Deleting..." : "Delete event"}
+                  </button>
+                )}
+                <button
+                  onClick={() => navigate(-1)}
+                  className="px-4 py-2 rounded-xl bg-evGreen text-gray-900 font-semibold shadow-md hover:bg-evGreen-dark transition-all"
+                >
+                  ⬅ Back
+                </button>
+              </div>
             </div>
+
+            {deleteError && (
+              <p role="alert" className="mb-4 p-3 rounded bg-red-50 text-red-800">
+                {deleteError}
+              </p>
+            )}
 
             {/* INFO BLOCKS */}
             <div className="bg-white rounded-xl p-4 shadow-md mb-6">

@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useNavigate } from "react-router";
 import { apiConfig } from "../api/apiConfig";
 import { useAuth } from "../context/useAuth";
+import { coverOptions, eventCoverUrl } from "../data/eventCovers";
 
 const today = () => {
   const date = new Date();
@@ -13,7 +14,7 @@ const CreateEvent = () => {
   const navigate = useNavigate();
   const { token } = useAuth();
   const [form, setForm] = useState({
-    title: "", description: "", date: today(), location: "",
+    title: "", description: "", date: today(), location: "", imageTheme: "auto",
   });
   const [error, setError] = useState("");
   const [pending, setPending] = useState(false);
@@ -36,6 +37,7 @@ const CreateEvent = () => {
           title: form.title,
           location: form.location,
           description: form.description,
+          imageTheme: form.imageTheme,
           startsAt,
         }),
       });
@@ -73,6 +75,25 @@ const CreateEvent = () => {
             onChange={e=>setForm(x=>({...x,location:e.target.value}))}
             className="mt-2 block w-full p-3 rounded border border-gray-300" />
         </label>
+        <label className="block text-gray-900 text-sm font-semibold">
+          Event cover
+          <select
+            value={form.imageTheme}
+            onChange={e => setForm(x => ({ ...x, imageTheme: e.target.value }))}
+            className="mt-2 block w-full p-3 rounded border border-gray-300 bg-white"
+          >
+            {coverOptions.map(option => (
+              <option key={option.value} value={option.value}>{option.label}</option>
+            ))}
+          </select>
+        </label>
+        <div className="rounded-xl overflow-hidden bg-gray-100 h-32">
+          <img
+            src={eventCoverUrl(form.imageTheme === "auto" ? "community" : form.imageTheme)}
+            className="w-full h-full object-cover"
+            alt="Selected event cover preview"
+          />
+        </div>
         <label className="block text-gray-900 text-sm font-semibold">
           Description
           <textarea rows={4} maxLength={5000} value={form.description}
