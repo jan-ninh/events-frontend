@@ -1,10 +1,12 @@
 import { createContext, useCallback, useEffect, useMemo, useState } from "react";
 import { fetchProfile } from "../api/authApi";
+import { useBackendStatus } from "./useBackendStatus";
 
 export const AuthContext = createContext(null);
 const AUTH_STORAGE_KEY = "jan-events-auth-v1";
 
 export function AuthProvider({ children }) {
+  const { isReady } = useBackendStatus();
   const [user, setUser] = useState(null);
   const [token, setToken] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -22,6 +24,8 @@ export function AuthProvider({ children }) {
   }, []);
 
   useEffect(() => {
+    // Do not mistake a sleeping Render backend for an invalid saved session.
+    if (!isReady) return;
     let active = true;
     const stored = localStorage.getItem(AUTH_STORAGE_KEY);
     if (!stored) {
@@ -46,7 +50,7 @@ export function AuthProvider({ children }) {
     })();
 
     return () => { active = false; };
-  }, [logout]);
+  }, [logout, isReady]);
 
   const value = useMemo(() => ({
     user, token, isAuthenticated: Boolean(token),
