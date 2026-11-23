@@ -2,8 +2,10 @@ import { fetchEvents } from "../api/events";
 import { useEffect, useMemo, useState } from "react";
 import { EventGrid } from "../components/EventGrid";
 import { sortChoices, sortEvents } from "../utils/sortEvents";
+import { useBackendStatus } from "../context/useBackendStatus";
 
 export const Home = () => {
+  const { isReady } = useBackendStatus();
   const [events, setEvents] = useState([]);
   const [sortOrder, setSortOrder] = useState("created-desc");
   const [loading, setLoading] = useState(true);
@@ -11,7 +13,10 @@ export const Home = () => {
   const sortedEvents = useMemo(() => sortEvents(events, sortOrder), [events, sortOrder]);
 
   useEffect(() => {
+    if (!isReady) return;
     let active = true;
+    setError("");
+    setLoading(true);
     fetchEvents()
       .then((data) => {
         if (active) setEvents(Array.isArray(data?.results) ? data.results : []);
@@ -23,7 +28,7 @@ export const Home = () => {
         if (active) setLoading(false);
       });
     return () => { active = false; };
-  }, []);
+  }, [isReady]);
 
   return (
     <div className="px-5 pb-20 pt-12 sm:px-7 sm:pt-16">
@@ -53,16 +58,23 @@ export const Home = () => {
           </div>
         </header>
 
+        <aside className="mb-7 rounded-xl border border-sky-300/20 bg-slate-800/55 px-4 py-3 text-sm leading-relaxed text-slate-200" aria-label="About this portfolio demo">
+          <span className="font-semibold text-cyan-200">Live portfolio demo.</span>
+          {" "}Events and accounts are temporary and may reset when the free server restarts. The three sample events return automatically. Please use fictional details.
+        </aside>
+
         <div className="home-section-heading mb-5 flex items-center justify-between gap-4">
           <h2 className="text-base font-semibold tracking-wide text-white">Explore events</h2>
-          {!loading && !error && (
+          {isReady && !loading && !error && (
             <p className="text-sm text-slate-300">
               {events.length} {events.length === 1 ? "event" : "events"}
             </p>
           )}
         </div>
 
-        {loading ? (
+        {!isReady ? (
+          <div className="home-feedback" role="status">Waiting for the demo server to start…</div>
+        ) : loading ? (
           <div className="home-feedback" role="status">Loading events…</div>
         ) : error ? (
           <div className="home-feedback" role="alert">{error}</div>
