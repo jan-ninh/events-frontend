@@ -23,3 +23,34 @@
     animation: fadeIn 0.12s ease-out;
   }
 }
+
+/* Non-editable content uses the normal pointer, not the text-editing I-beam.
+   Keep text selection available for copying descriptions and accessibility. */
+body {
+  cursor: default;
+}
+
+a,
+button,
+summary,
+select,
+input[type="button"],
+input[type="submit"],
+input[type="reset"],
+input[type="checkbox"],
+input[type="radio"],
+label[for] {
+  cursor: pointer;
+}
+
+input[type="text"],
+input[type="email"],
+input[type="password"],
+input[type="search"],
+input[type="url"],
+input[type="tel"],
+input[type="number"],
+textarea,
+[contenteditable="true"] {
+  cursor: text;
+}
