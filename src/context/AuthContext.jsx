@@ -1,61 +1,57 @@
-import { createContext, useEffect, useState } from "react";
+import { createContext, useCallback, useEffect, useMemo, useState } from "react";
+import { fetchProfile } from "../api/authApi";
 
 export const AuthContext = createContext(null);
-const AUTH_STORAGE_KEY = "authContext";
+const AUTH_STORAGE_KEY = "jan-events-auth-v1";
 
 export function AuthProvider({ children }) {
-  const [user, setUser] = useState(null); // { id, name, email }
-  const [token, setToken] = useState(null); // String-JWT
+  const [user, setUser] = useState(null);
+  const [token, setToken] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
 
-  // Bei App-Start 1x localStorage laden
+  const logout = useCallback(() => {
+    setToken(null);
+    setUser(null);
+    localStorage.removeItem(AUTH_STORAGE_KEY);
+  }, []);
+
+  const login = useCallback(({ token: nextToken, user: nextUser }) => {
+    setToken(nextToken);
+    setUser(nextUser);
+    localStorage.setItem(AUTH_STORAGE_KEY, JSON.stringify({ token: nextToken, user: nextUser }));
+  }, []);
+
   useEffect(() => {
+    let active = true;
     const stored = localStorage.getItem(AUTH_STORAGE_KEY);
     if (!stored) {
       setIsLoading(false);
       return;
     }
 
-    try {
-      const parsed = JSON.parse(stored);
-      if (parsed.token) {
-        setToken(parsed.token);
-        setUser(parsed.user || null);
+    (async () => {
+      try {
+        const { token: storedToken } = JSON.parse(stored);
+        if (!storedToken) throw new Error("Missing session");
+        const currentUser = await fetchProfile(storedToken);
+        if (active) {
+          setToken(storedToken);
+          setUser(currentUser);
+        }
+      } catch {
+        if (active) logout();
+      } finally {
+        if (active) setIsLoading(false);
       }
-    } catch {
-      // Falls JSON nicht lesbar ist
-      localStorage.removeItem(AUTH_STORAGE_KEY);
-    } finally {
-      setIsLoading(false);
-    }
-  }, []);
+    })();
 
-  // 1)Login
-  function login({ token, user }) {
-    setToken(token);
-    setUser(user);
-    localStorage.setItem(AUTH_STORAGE_KEY, JSON.stringify({ token, user }));
-    localStorage.setItem("authToken", token);
-    localStorage.setItem("authUser", JSON.stringify(user));
-  }
+    return () => { active = false; };
+  }, [logout]);
 
-  // 2)Logout
-  function logout() {
-    setToken(null);
-    setUser(null);
-    localStorage.removeItem(AUTH_STORAGE_KEY);
-    localStorage.removeItem("authToken");
-    localStorage.removeItem("authUser");
-  }
-
-  const value = {
-    user,
-    token,
-    isAuthenticated: Boolean(token),
-    isAuthLoading: isLoading,
-    login,
-    logout,
-  };
+  const value = useMemo(() => ({
+    user, token, isAuthenticated: Boolean(token),
+    isAuthLoading: isLoading, login, logout,
+  }), [user, token, isLoading, login, logout]);
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 }
