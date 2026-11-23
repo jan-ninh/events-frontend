@@ -1,5 +1,7 @@
 import { useEffect, useState } from "react";
-import { useParams, useNavigate } from "react-router";
+import { useParams, useNavigate, Link } from "react-router";
+import { useAuth } from "../context/useAuth";
+import { apiConfig } from "../api/apiConfig";
 import { EventService } from "../api/events";
 import { MapContainer, TileLayer, Marker, Popup } from "react-leaflet";
 import { Loader, Skeleton } from "../components/Loader";
@@ -20,6 +22,9 @@ const customMarker = L.icon({
 export const EventDetails = () => {
   const { id } = useParams();
   const navigate = useNavigate();
+  const { token } = useAuth();
+  const [registrationState, setRegistrationState] = useState("checking");
+  const [registrationError, setRegistrationError] = useState("");
   const [event, setEvent] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
@@ -45,6 +50,50 @@ export const EventDetails = () => {
     };
     fetchData();
   }, [id]);
+
+  useEffect(() => {
+    if (!id || !token) {
+      setRegistrationState("signed-out");
+      return;
+    }
+    let active = true;
+    setRegistrationState("checking");
+    fetch(`${apiConfig.baseUrl}/events/${id}/registrations`, {
+      headers: { Authorization: `Bearer ${token}` },
+    }).then(async response => {
+      if (!response.ok) throw new Error("Could not check registration");
+      return response.json();
+    }).then(data => {
+      if (active) setRegistrationState(data.results.length ? "joined" : "available");
+    }).catch(() => {
+      if (active) setRegistrationState("error");
+    });
+    return () => { active = false; };
+  }, [id, token]);
+
+  async function joinEvent() {
+    if (!token) return;
+    setRegistrationError("");
+    setRegistrationState("joining");
+    try {
+      const response = await fetch(`${apiConfig.baseUrl}/events/${id}/registrations`, {
+        method: "POST",
+        headers: { "content-type": "application/json", Authorization: `Bearer ${token}` },
+        body: JSON.stringify({}),
+      });
+      const data = await response.json().catch(() => ({}));
+      if (response.status === 409) {
+        setRegistrationState("joined");
+      } else if (!response.ok) {
+        throw new Error(data.error || "Registration failed");
+      } else {
+        setRegistrationState("joined");
+      }
+    } catch (err) {
+      setRegistrationError(err.message || "Registration failed");
+      setRegistrationState("available");
+    }
+  }
 
   return (
     <>
@@ -91,6 +140,32 @@ export const EventDetails = () => {
                 <MapPin className="w-5 h-5 text-evGreen-dark" />
                 {event.location}
               </p>
+            </div>
+
+
+            {/* Participant registration uses authenticated identity from backend */}
+            <div className="bg-blue-50 border border-blue-100 rounded-xl p-4 mb-6">
+              <h2 className="text-gray-900 font-semibold mb-2">Join this event</h2>
+              {registrationState === "signed-out" && (
+                <p className="text-sm text-gray-700">
+                  <Link to="/sign-in" className="text-blue-700 underline">Sign in</Link> to register.
+                </p>
+              )}
+              {registrationState === "joined" && (
+                <p className="text-sm text-green-800" role="status">You're registered for this event.</p>
+              )}
+              {(registrationState === "checking" || registrationState === "joining") && (
+                <p className="text-sm text-gray-700" role="status">Checking registration...</p>
+              )}
+              {registrationState === "error" && (
+                <p className="text-sm text-red-700">Could not load your registration. Please sign in again.</p>
+              )}
+              {registrationState === "available" && (
+                <button onClick={joinEvent} className="rounded-lg bg-blue-700 px-4 py-2 text-white font-semibold">
+                  Register for this event
+                </button>
+              )}
+              {registrationError && <p className="mt-2 text-red-700 text-sm" role="alert">{registrationError}</p>}
             </div>
 
             {/* DESCRIPTION */}
