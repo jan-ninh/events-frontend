@@ -13,7 +13,8 @@
 ## Das kann die App
 
 - **Benutzerkonto:** Registrierung, Login und Wiederherstellung einer vorhandenen Sitzung beim Neuladen.
-- **Events:** Veranstaltungen anlegen, chronologisch anzeigen und im Detail öffnen.
+- **Events:** Veranstaltungen anlegen, chronologisch anzeigen, im Detail öffnen und als Ersteller wieder löschen.
+- **Eventbilder:** Passende Bildkategorie beim Erstellen auswählen oder automatisch zwischen verschiedenen Motiven wechseln. Die Bilder stammen von [Unsplash](https://unsplash.com/license).
 - **Teilnahme:** Per Klick für eine Veranstaltung registrieren und den Anmeldestatus wieder abrufen.
 - **Konsistente Verarbeitung:** Eine doppelte Anmeldung wird durch einen eindeutigen Datenbankschlüssel verhindert.
 - **REST-Integration:** Das React-Frontend kommuniziert mit einer eigenständig aufgebauten Node.js-/Express-API und einer relationalen SQLite-Datenbank.
