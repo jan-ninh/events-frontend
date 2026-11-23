@@ -3,6 +3,7 @@ import { useParams, useNavigate, Link } from "react-router";
 import { useAuth } from "../context/useAuth";
 import { apiConfig } from "../api/apiConfig";
 import { EventService } from "../api/events";
+import { lookupCity } from "../api/geocodeCity";
 import { MapContainer, TileLayer, Marker, Popup } from "react-leaflet";
 import { Loader, Skeleton } from "../components/Loader";
 import "leaflet/dist/leaflet.css";
@@ -26,6 +27,7 @@ export const EventDetails = () => {
   const [registrationState, setRegistrationState] = useState("checking");
   const [registrationError, setRegistrationError] = useState("");
   const [event, setEvent] = useState(null);
+  const [map, setMap] = useState({ status: "loading", coords: null, approximate: false });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   useEffect(() => {
@@ -70,6 +72,40 @@ export const EventDetails = () => {
     });
     return () => { active = false; };
   }, [id, token]);
+
+  // Existing events without stored coordinates can still be shown on a city-level map.
+  useEffect(() => {
+    if (!event) return;
+    if (Number.isFinite(event.latitude) && Number.isFinite(event.longitude)) {
+      setMap({
+        status: "ready",
+        coords: { latitude: event.latitude, longitude: event.longitude },
+        approximate: false,
+      });
+      return;
+    }
+    const controller = new AbortController();
+    let active = true;
+    setMap({ status: "loading", coords: null, approximate: true });
+    lookupCity(event.location, { signal: controller.signal })
+      .then((coords) => {
+        if (!active) return;
+        setMap({
+          status: coords ? "ready" : "unavailable",
+          coords,
+          approximate: true,
+        });
+      })
+      .catch((error) => {
+        if (active && error.name !== "AbortError") {
+          setMap({ status: "unavailable", coords: null, approximate: true });
+        }
+      });
+    return () => {
+      active = false;
+      controller.abort();
+    };
+  }, [event]);
 
   async function joinEvent() {
     if (!token) return;
@@ -178,23 +214,52 @@ export const EventDetails = () => {
 
             {/* MAP */}
             <div className="rounded-xl overflow-hidden shadow-lg mb-6">
-              {event.latitude && event.longitude ? (
-                <MapContainer
-                  center={[event.latitude, event.longitude]}
-                  zoom={14}
-                  style={{ height: "350px", width: "100%" }}
-                >
-                  <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
-                  <Marker
-                    position={[event.latitude, event.longitude]}
-                    icon={customMarker}
+              {map.status === "ready" && map.coords ? (
+                <>
+                  <MapContainer
+                    key={`${map.coords.latitude}-${map.coords.longitude}`}
+                    center={[map.coords.latitude, map.coords.longitude]}
+                    zoom={map.approximate ? 12 : 14}
+                    style={{ height: "260px", width: "100%" }}
+                    scrollWheelZoom={false}
                   >
-                    <Popup>{event.location}</Popup>
-                  </Marker>
-                </MapContainer>
+                    <TileLayer
+                      url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+                      attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+                    />
+                    <Marker
+                      position={[map.coords.latitude, map.coords.longitude]}
+                      icon={customMarker}
+                    >
+                      <Popup>
+                        {map.approximate
+                          ? `Approximate city centre for ${event.location}`
+                          : event.location}
+                      </Popup>
+                    </Marker>
+                  </MapContainer>
+                  {map.approximate && (
+                    <p className="bg-gray-50 px-4 py-2 text-xs text-gray-600">
+                      Approximate city location, not the exact event venue.
+                      {" "}Location data: Open-Meteo / GeoNames.
+                    </p>
+                  )}
+                </>
+              ) : map.status === "loading" ? (
+                <div className="p-6 text-center text-gray-600 bg-gray-100" role="status">
+                  Looking up the event location…
+                </div>
               ) : (
-                <div className="p-6 text-center text-gray-500 bg-gray-100">
-                  Map not available
+                <div className="p-6 text-center text-gray-600 bg-gray-100">
+                  Couldn't determine map coordinates.{" "}
+                  <a
+                    href={`https://www.openstreetmap.org/search?query=${encodeURIComponent(event.location)}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-blue-700 underline"
+                  >
+                    Search on OpenStreetMap
+                  </a>
                 </div>
               )}
             </div>
