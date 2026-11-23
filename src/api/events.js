@@ -3,14 +3,10 @@ import { get } from "./utils";
 
 const API_EVENTS_ENDPOINT = `${apiConfig.baseUrl}/events`;
 
-const getEventById = async (id) => {
-  return get(`${API_EVENTS_ENDPOINT}/${id}`);
-};
+const getEventById = async (id) => get(`${API_EVENTS_ENDPOINT}/${id}`);
 
-export const EventService = {
-  getEventById,
-};
+export const EventService = { getEventById };
 
-export const fetchEvents = async () => {
-  return get(API_EVENTS_ENDPOINT);
-};
+// Fetch up to the API's allowed 100 records for client-side sorting.
+// The currently small demo dataset is fully covered; no pagination UI yet.
+export const fetchEvents = async () => get(`${API_EVENTS_ENDPOINT}?limit=100`);
