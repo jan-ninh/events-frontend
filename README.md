@@ -1,6 +1,6 @@
 # Evendule | Events-App
 
-**Events entdecken, erstellen und sich dafür anmelden.** Evendule ist eine React-Anwendung, die in einem WBS-Coding-School-Teamprojekt entstand und anschließend mit einer eigenen Express-/SQLite-API zu einer durchgängigen Fullstack-Anwendung weiterentwickelt wurde.
+**Events entdecken, erstellen und sich dafür anmelden.** Evendule verbindet ein React-Frontend mit einer eigenen Express-/SQLite-API. Das Ergebnis ist eine durchgängige Fullstack-Anwendung mit Login, Event-Verwaltung, Teilnehmeranmeldung und relationaler Datenhaltung.
 
 **[Backend & SQL ansehen](https://github.com/jan-ninh/events-api-jan)** · **[Frontend-Code ansehen](https://github.com/jan-ninh/events-frontend/tree/main/src)**
 
@@ -80,7 +80,7 @@ Die Vorgänge werden im eigenen SQLite-Backend gespeichert. Die Anmeldung wird a
 
 **WBS-Teamprojekt (2025):** Das ursprüngliche React-Frontend entstand im Team. Beiträge von Jan Ninh an Event-Erstellung, Routing und API-Integration sind in der gemeinsamen [Commit-Historie](https://github.com/DariaKozlova-web/events-frontend/commits/main/) nachvollziehbar.
 
-**Fullstack-Weiterentwicklung (2026):** Das Frontend wurde mit einer separaten Express-/SQLite-Implementierung verbunden. Dazu gehören die Anpassung der Login-/Signup-Schnittstellen, der Session-Prüfung, der Event-Erstellung und der Teilnahmeansicht. Das neue Backend mit SQL-Datenmodell, REST-Routen, Authentifizierung und automatisierten Tests ist im [zugehörigen Repository](https://github.com/jan-ninh/events-api-jan) dokumentiert. Die Weiterentwicklung erfolgte mit KI-Unterstützung und eigener Prüfung der implementierten Funktionen.
+**Fullstack-Weiterentwicklung (2026):** Das Frontend wurde mit einer separaten Express-/SQLite-Implementierung verbunden. Dazu gehören die Anpassung der Login-/Signup-Schnittstellen, der Session-Prüfung, der Event-Erstellung und der Teilnahmeansicht. Das separat entwickelte Backend mit SQL-Datenmodell, REST-Routen, Authentifizierung und automatisierten Tests ist im [zugehörigen Repository](https://github.com/jan-ninh/events-api-jan) dokumentiert.
 
 ## Projektstatus
 
