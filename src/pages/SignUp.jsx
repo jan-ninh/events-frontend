@@ -1,313 +1,68 @@
-import { useActionState, useState, useEffect } from "react";
-import { Link } from "react-router";
-import { useNavigate } from "react-router";
-// import { loginUser, fetchProfile } from "../api/authApi";
-import { validate } from "../api/auth.js";
-//import { useAuth } from "../context/useAuth";
-const API_FALLBACK = "http://localhost:3001/api";
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || API_FALLBACK;
-const API_USERS_ENDPOINT = `${API_BASE_URL}/users`;
-
-const saveUser = async (formData) => {
-  try {
-    const res = await fetch(API_USERS_ENDPOINT, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(formData),
-      //
-    });
-    if (!res.ok) throw new Error("Fetch failed");
-
-    const data = await res.json();
-    console.log(data);
-  } catch {
-    console.log("error");
-  }
-};
-
-const submitAction = async (prevState, formData) => {
-  const name = formData.get("name");
-  const email = formData.get("email");
-  const password = formData.get("password");
-  const validationErrors = validate({ name, email, password });
-  if (Object.keys(validationErrors).length > 0) {
-    return { error: validationErrors, success: false };
-  }
-  console.log("Submitted:", { name, email, password });
-  alert("Form submitted successfully!");
-  //User registrieren
-  await saveUser({ name, email, password });
-  return { error: null, success: true };
-  // 2. Direkt nach Registrierung einloggen
-  // try {
-  //   const loginRes = await loginUser({ email, password });
-
-  //   let user = loginRes.user;
-  //   const token = loginRes.token;
-
-  //   // Falls Backend kein user zurück gibt → nachladen
-  //   if (!user && token) {
-  //     user = await fetchProfile(token);
-  //   }
-
-  //   return {
-  //     error: null,
-  //     success: true,
-  //     auth: { token, user },
-  //   };
-  // } catch (err) {
-  //   console.error("Failed to fetch profile:", err);
-  //   return {
-  //     error: { form: "Registration succeeded but login failed" },
-  //     success: false,
-  //   };
-  // }
-};
-
-// const validate = ({ name, email, password }) => {
-//   const newErrors = {};
-//   if (!name.trim()) newErrors.name = "Name is required.";
-//   if (!email.trim()) {
-//     newErrors.email = "Email is required.";
-//   } else if (!/\S+@\S+\.\S+/.test(email)) {
-//     newErrors.email = "Invalid email format.";
-//   }
-//   if (!password.trim()) newErrors.password = "password is required.";
-//   return newErrors;
-// };
+import { useState } from "react";
+import { Link, useNavigate } from "react-router";
+import { registerUser } from "../api/authApi";
+import { useAuth } from "../context/useAuth";
 
 export const SignUp = () => {
-  //const { login } = useAuth();
   const navigate = useNavigate();
-  const [state, formAction, isPending] = useActionState(submitAction, {});
+  const { login } = useAuth();
+  const [form, setForm] = useState({ name: "", email: "", password: "" });
+  const [pending, setPending] = useState(false);
+  const [error, setError] = useState("");
 
-  const [{ name, email, password }, setFormData] = useState({
-    name: "",
-    email: "",
-    password: "",
-  });
-  const handleChange = (e) => {
-    setFormData((prev) => ({
-      ...prev,
-      [e.target.name]: e.target.value,
-    }));
-  };
-
-  useEffect(() => {
-    if (state.success) {
-      navigate("/sign-in");
+  async function submit(event) {
+    event.preventDefault();
+    setError("");
+    if (form.password.length < 12) {
+      setError("Use a password with at least 12 characters.");
+      return;
     }
-  }, [state, navigate]);
-
-  // useEffect(() => {
-  //   if (state.auth?.token && state.auth?.user) {
-  //     login({
-  //       token: state.auth.token,
-  //       user: state.auth.user,
-  //     });
-
-  //     navigate("/");
-  //   }
-  // }, [state, login, navigate]);
+    setPending(true);
+    try {
+      const auth = await registerUser(form);
+      login(auth);
+      navigate("/");
+    } catch (err) {
+      setError(err.message || "Registration failed.");
+    } finally {
+      setPending(false);
+    }
+  }
 
   return (
-    <>
-      <div className="bg-white md:h-screen">
-        <div className="grid md:grid-cols-2 items-center h-full">
-          {/* <div class="max-md:order-1 object-contain"> */}
-          <img
-            src="https://images.unsplash.com/photo-1496917756835-20cb06e75b4e?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=1908&q=80"
-            className=" w-full h-full aspect-square object-cover block mx-auto"
-            alt="login-image"
-          />
-
-          <div className="flex items-center lg:p-12 p-8 bg-[#0C172C] h-full lg:w-12/12 lg:ml-auto">
-            <form className="max-w-lg w-full mx-auto" action={formAction}>
-              {/* Form */}
-              <div className="mb-12">
-                <h1 className="text-3xl font-semibold">Create an account</h1>
-              </div>
-              <div>
-                <label className="text-white text-xs block mb-2" htmlFor="name">
-                  Full Name
-                </label>
-                <div className="relative flex items-center">
-                  <input
-                    name="name"
-                    type="text"
-                    id="name"
-                    required
-                    className="w-full bg-transparent text-sm text-white border-b border-slate-500 focus:border-white pl-2 pr-8 py-3 outline-none"
-                    placeholder="Enter name"
-                    value={name}
-                    onChange={handleChange}
-                  />
-                  {state.error?.name && (
-                    <p className="text-sm text-red-600 mt-1">
-                      {state.error?.name}
-                    </p>
-                  )}
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    fill="#bbb"
-                    stroke="#bbb"
-                    className="w-[18px] h-[18px] absolute right-2"
-                    viewBox="0 0 24 24"
-                  >
-                    <circle
-                      cx="10"
-                      cy="7"
-                      r="6"
-                      data-original="#000000"
-                    ></circle>
-                    <path
-                      d="M14 15H6a5 5 0 0 0-5 5 3 3 0 0 0 3 3h12a3 3 0 0 0 3-3 5 5 0 0 0-5-5zm8-4h-2.59l.3-.29a1 1 0 0 0-1.42-1.42l-2 2a1 1 0 0 0 0 1.42l2 2a1 1 0 0 0 1.42 0 1 1 0 0 0 0-1.42l-.3-.29H22a1 1 0 0 0 0-2z"
-                      data-original="#000000"
-                    ></path>
-                  </svg>
-                </div>
-              </div>
-              <div className="mt-8">
-                <label
-                  className="text-white text-xs block mb-2"
-                  htmlFor="email"
-                >
-                  Email
-                </label>
-                <div className="relative flex items-center">
-                  <input
-                    name="email"
-                    type="text"
-                    required
-                    className="w-full bg-transparent text-sm text-white border-b border-slate-500 focus:border-white pl-2 pr-8 py-3 outline-none"
-                    placeholder="Enter email"
-                    value={email}
-                    onChange={handleChange}
-                  />
-                  {state.error?.email && (
-                    <p className="text-sm text-red-600 mt-1">
-                      {state.error?.email}
-                    </p>
-                  )}
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    fill="#bbb"
-                    stroke="#bbb"
-                    className="w-[18px] h-[18px] absolute right-2"
-                    viewBox="0 0 682.667 682.667"
-                  >
-                    <defs>
-                      <clipPath id="a" clipPathUnits="userSpaceOnUse">
-                        <path
-                          d="M0 512h512V0H0Z"
-                          data-original="#000000"
-                        ></path>
-                      </clipPath>
-                    </defs>
-                    <g
-                      clipPath="url(#a)"
-                      transform="matrix(1.33 0 0 -1.33 0 682.667)"
-                    >
-                      <path
-                        fill="none"
-                        strokeMiterlimit="10"
-                        strokeWidth="40"
-                        d="M452 444H60c-22.091 0-40-17.909-40-40v-39.446l212.127-157.782c14.17-10.54 33.576-10.54 47.746 0L492 364.554V404c0 22.091-17.909 40-40 40Z"
-                        data-original="#000000"
-                      ></path>
-                      <path
-                        d="M472 274.9V107.999c0-11.027-8.972-20-20-20H60c-11.028 0-20 8.973-20 20V274.9L0 304.652V107.999c0-33.084 26.916-60 60-60h392c33.084 0 60 26.916 60 60v196.653Z"
-                        data-original="#000000"
-                      ></path>
-                    </g>
-                  </svg>
-                </div>
-              </div>
-              <div className="mt-8">
-                <label
-                  className="text-white text-xs block mb-2"
-                  htmlFor="password"
-                >
-                  Password
-                </label>
-                <div className="relative flex items-center">
-                  <input
-                    name="password"
-                    type="password"
-                    required
-                    className="w-full bg-transparent text-sm text-white border-b border-slate-500 focus:border-white pl-2 pr-8 py-3 outline-none"
-                    placeholder="Enter password"
-                    value={password}
-                    onChange={handleChange}
-                  />
-                  {state.error?.password && (
-                    <p className="text-sm text-red-600 mt-1">
-                      {state.error?.password}
-                    </p>
-                  )}
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    fill="#bbb"
-                    stroke="#bbb"
-                    className="w-[18px] h-[18px] absolute right-2 cursor-pointer"
-                    viewBox="0 0 128 128"
-                  >
-                    <path
-                      d="M64 104C22.127 104 1.367 67.496.504 65.943a4 4 0 0 1 0-3.887C1.367 60.504 22.127 24 64 24s62.633 36.504 63.496 38.057a4 4 0 0 1 0 3.887C126.633 67.496 105.873 104 64 104zM8.707 63.994C13.465 71.205 32.146 96 64 96c31.955 0 50.553-24.775 55.293-31.994C114.535 56.795 95.854 32 64 32 32.045 32 13.447 56.775 8.707 63.994zM64 88c-13.234 0-24-10.766-24-24s10.766-24 24-24 24 10.766 24 24-10.766 24-24 24zm0-40c-8.822 0-16 7.178-16 16s7.178 16 16 16 16-7.178 16-16-7.178-16-16-16z"
-                      data-original="#000000"
-                    ></path>
-                  </svg>
-                </div>
-              </div>
-              <div className="flex items-center mt-8">
-                <input
-                  id="remember-me"
-                  name="remember-me"
-                  type="checkbox"
-                  className="h-4 w-4 shrink-0 rounded"
-                />
-                <label
-                  htmlFor="remember-me"
-                  className="text-slate-300 ml-3 block text-sm"
-                >
-                  I accept the{" "}
-                  <a
-                    href="javascript:void(0);"
-                    className="text-purple-400 font-medium hover:underline ml-1"
-                  >
-                    Terms and Conditions
-                  </a>
-                </label>
-              </div>
-
-              <div className="mt-8">
-                <button
-                  type="submit"
-                  className={`w-full py-2 rounded text-white ${
-                    isPending
-                      ? "bg-[#00b9ff] cursor-not-allowed"
-                      : "bg-[#00b9ff] hover:bg-[#4d90fe]"
-                  }`}
-                  disabled={isPending}
-                >
-                  {isPending ? "Registering..." : "Register"}
-                </button>
-                <p className="text-sm text-slate-300 mt-8">
-                  Already have an account?{" "}
-                  <Link
-                    to={`/sign-in`}
-                    className="text-purple-400 font-medium hover:underline ml-1"
-                  >
-                    Login here
-                  </Link>
-                </p>
-              </div>
-            </form>
-          </div>
+    <main className="min-h-screen bg-[#0C172C] flex justify-center items-center px-5 py-16">
+      <form onSubmit={submit} className="w-full max-w-lg rounded-2xl bg-white p-8 shadow-xl space-y-6">
+        <div>
+          <h1 className="text-3xl font-semibold text-gray-900">Create an account</h1>
+          <p className="mt-2 text-sm text-gray-600">Evendule, connected to Jan's SQLite Events API (local demo).</p>
         </div>
-      </div>
-    </>
+        {error && <p role="alert" className="text-sm bg-red-50 border border-red-200 text-red-700 rounded p-3">{error}</p>}
+        <label className="block text-gray-900 text-sm font-medium">
+          Full name
+          <input type="text" name="name" value={form.name} required minLength={2} maxLength={80}
+            onChange={e => setForm(x => ({ ...x, name: e.target.value }))}
+            className="block w-full mt-2 border border-gray-300 rounded-lg p-3 text-gray-900" />
+        </label>
+        <label className="block text-gray-900 text-sm font-medium">
+          Email
+          <input type="email" name="email" value={form.email} required autoComplete="email"
+            onChange={e => setForm(x => ({ ...x, email: e.target.value }))}
+            className="block w-full mt-2 border border-gray-300 rounded-lg p-3 text-gray-900" />
+        </label>
+        <label className="block text-gray-900 text-sm font-medium">
+          Password (minimum 12 characters)
+          <input type="password" name="password" value={form.password} required minLength={12} maxLength={128} autoComplete="new-password"
+            onChange={e => setForm(x => ({ ...x, password: e.target.value }))}
+            className="block w-full mt-2 border border-gray-300 rounded-lg p-3 text-gray-900" />
+        </label>
+        <button disabled={pending} type="submit"
+          className="w-full rounded-lg bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 disabled:opacity-50">
+          {pending ? "Creating account..." : "Create account"}
+        </button>
+        <p className="text-sm text-gray-600">
+          Already registered? <Link to="/sign-in" className="text-blue-700 underline">Sign in</Link>
+        </p>
+      </form>
+    </main>
   );
 };
