@@ -35,7 +35,7 @@ $headers = @{ Authorization = "Bearer $($session.accessToken)" }
 $demoEvents = @(
     @{
         title = "React & TypeScript Community Night"
-        location = "Dusseldorf, Germany"
+        location = "Dortmund, Germany"
         startsAt = "2026-12-17T17:00:00Z"
         imageTheme = "tech"
         description = "An evening for frontend developers to share practical insights, discuss reusable React components and exchange lessons from real TypeScript projects."
