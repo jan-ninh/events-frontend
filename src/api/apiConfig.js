@@ -1,6 +1,5 @@
-const API_FALLBACK = "http://localhost:3001/api";
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || API_FALLBACK;
-
+// Use a relative path with Vite's /api proxy in local development.
+// A deployment must supply its own securely configured reverse proxy.
 export const apiConfig = {
-  baseUrl: API_BASE_URL,
+  baseUrl: import.meta.env.VITE_API_BASE_URL || "/api",
 };
