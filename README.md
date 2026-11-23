@@ -1,5 +1,7 @@
 # Evendule | Events-App
 
+[![Frontend build](https://github.com/jan-ninh/events-frontend/actions/workflows/ci.yml/badge.svg)](https://github.com/jan-ninh/events-frontend/actions/workflows/ci.yml)
+
 **Events entdecken, erstellen und sich dafür anmelden.** Evendule verbindet ein React-Frontend mit einer eigenen Express-/SQLite-API. Das Ergebnis ist eine durchgängige Fullstack-Anwendung mit Login, Event-Verwaltung, Teilnehmeranmeldung und relationaler Datenhaltung.
 
 **[Backend & SQL ansehen](https://github.com/jan-ninh/events-api-jan)** · **[Frontend-Code ansehen](https://github.com/jan-ninh/events-frontend/tree/main/src)**
