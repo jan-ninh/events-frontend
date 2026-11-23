@@ -53,7 +53,7 @@ const CreateEvent = () => {
     <main className="max-w-2xl mx-auto px-5 py-12">
       <form onSubmit={submit} className="bg-white rounded-xl shadow p-8 space-y-5">
         <h1 className="text-2xl font-semibold text-gray-900">Create New Event</h1>
-        <p className="text-sm text-gray-600">Events are saved in Jan's local SQLite database.</p>
+        <p className="text-sm text-gray-600">Bring people together with a new event.</p>
         {error && <p role="alert" className="p-3 bg-red-50 text-red-700 rounded">{error}</p>}
         <label className="block text-gray-900 text-sm font-semibold">
           Title
