@@ -6,9 +6,9 @@
 
 **[Backend & SQL ansehen](https://github.com/jan-ninh/events-api-jan)** · **[Frontend-Code ansehen](https://github.com/jan-ninh/events-frontend/tree/main/src)**
 
-![Evendule: erfolgreich für ein Event angemeldet](docs/screenshots/registration-confirmed.webp)
+![Evendule – Eventdetails mit bestätigter Anmeldung und Karte](docs/screenshots/02-anmeldung-mit-karte.webp)
 
-*Echte Aufnahme aus der lokalen Anwendung: Der angemeldete Benutzer hat sich für das Event registriert. Die vollständige Frontend-Backend-Verbindung wurde zusätzlich im Browser durchgespielt.*
+*Eventdetailseite mit erfolgreicher Teilnehmeranmeldung und interaktiver Karte. Screenshot aus der lokal getesteten Fullstack-App mit Demo-Account.*
 
 ## Das kann die App
 
@@ -17,6 +17,12 @@
 - **Teilnahme:** Per Klick für eine Veranstaltung registrieren und den Anmeldestatus wieder abrufen.
 - **Konsistente Verarbeitung:** Eine doppelte Anmeldung wird durch einen eindeutigen Datenbankschlüssel verhindert.
 - **REST-Integration:** Das React-Frontend kommuniziert mit einer eigenständig aufgebauten Node.js-/Express-API und einer relationalen SQLite-Datenbank.
+
+### Event-Erstellung
+
+![Evendule – Formular zum Erstellen einer Veranstaltung](docs/screenshots/01-event-erstellen.webp)
+
+*Neue Events mit Titel, Datum, Ort und Beschreibung anlegen. Die Daten werden über die REST-API in SQLite gespeichert.*
 
 ## Technologien
 
