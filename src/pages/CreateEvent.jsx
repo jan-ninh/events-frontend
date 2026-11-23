@@ -3,7 +3,11 @@ import { useNavigate } from "react-router";
 import { apiConfig } from "../api/apiConfig";
 import { useAuth } from "../context/useAuth";
 
-const today = () => new Date().toLocaleDateString("en-CA");
+const today = () => {
+  const date = new Date();
+  const shifted = new Date(date.getTime() - date.getTimezoneOffset() * 60000);
+  return shifted.toISOString().slice(0, 10);
+};
 
 const CreateEvent = () => {
   const navigate = useNavigate();
