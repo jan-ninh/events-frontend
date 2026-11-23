@@ -1,16 +1,22 @@
-import React from "react";
 import { EventCard } from "./EventCard";
 
-export const EventGrid = ({ events }) => {
-  events?.sort((e1, e2) => {
-    const date1 = new Date(e1.date);
-    const date2 = new Date(e2.date);
-    return date1 - date2;
-  });
+export const EventGrid = ({ events = [] }) => {
+  const sortedEvents = [...events].sort((a, b) =>
+    new Date(a.date).getTime() - new Date(b.date).getTime()
+  );
+
+  if (sortedEvents.length === 0) {
+    return (
+      <div className="text-center py-24">
+        <h2 className="text-2xl font-semibold">No events yet</h2>
+        <p className="mt-2 text-base-content/70">Create an event to bring your community together.</p>
+      </div>
+    );
+  }
 
   return (
-    <div className="grid gap-y-10 gap-x-8 md:grid-cols-2 xl:grid-cols-3 place-items-center">
-      {events?.map((event) => (
+    <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 items-stretch gap-8">
+      {sortedEvents.map((event) => (
         <EventCard key={event.id} event={event} />
       ))}
     </div>
