@@ -1,24 +1,11 @@
-import { apiConfig } from "./apiConfig";
-import { post } from "./utils";
-
-const API_USERS_ENDPOINT = `$${apiConfig.baseUrl}/users`;
-const API_AUTH_LOGIN_ENDPOINT = `${apiConfig.baseUrl}/auth/login`;
-
-export const validate = ({ email, password }) => {
-  const newErrors = {};
-  if (!email.trim()) {
-    newErrors.email = "Email is required.";
-  } else if (!/\S+@\S+\.\S+/.test(email)) {
-    newErrors.email = "Invalid email format.";
+// Client-side checks improve UX. The Express API validates all inputs again.
+export function validate({ email, password }) {
+  const errors = {};
+  if (typeof email !== "string" || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim())) {
+    errors.email = "Enter a valid email address.";
   }
-  if (!password.trim()) newErrors.password = "Password is required.";
-  return newErrors;
-};
-
-export const signUp = async (formState) => {
-  return post(API_USERS_ENDPOINT, formState);
-};
-
-export const signIn = async (formState) => {
-  return post(API_AUTH_LOGIN_ENDPOINT, formState);
-};
+  if (typeof password !== "string" || password.length === 0) {
+    errors.password = "Password is required.";
+  }
+  return errors;
+}

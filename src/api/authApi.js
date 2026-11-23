@@ -1,35 +1,36 @@
 import { apiConfig } from "./apiConfig";
 
-// 1)Fetch Login
-export async function loginUser(credentials) {
-  const response = await fetch(`${apiConfig.baseUrl}/auth/login`, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify(credentials),
-  });
-
+async function parseResponse(response) {
+  const data = await response.json().catch(() => ({}));
   if (!response.ok) {
-    const errorBody = await response.json().catch(() => ({}));
-    const message = errorBody.message || errorBody.error || "Login failed.";
-    throw new Error(message);
+    throw new Error(data.error || "Authentication request failed");
   }
-  const data = await response.json();
-  return data; //{ token, ... }
+  return data;
 }
 
-// 2)Fetch Profile
+export async function registerUser({ name, email, password }) {
+  const response = await fetch(`${apiConfig.baseUrl}/auth/signup`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ name, email, password }),
+  });
+  const data = await parseResponse(response);
+  return { token: data.accessToken, user: data.participant };
+}
+
+export async function loginUser({ email, password }) {
+  const response = await fetch(`${apiConfig.baseUrl}/auth/login`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ email, password }),
+  });
+  const data = await parseResponse(response);
+  return { token: data.accessToken, user: data.participant };
+}
+
 export async function fetchProfile(token) {
   const response = await fetch(`${apiConfig.baseUrl}/auth/profile`, {
-    headers: {
-      Authorization: `Bearer ${token}`,
-    },
+    headers: { Authorization: `Bearer ${token}` },
   });
-
-  if (!response.ok) {
-    throw new Error("Could not fetch profile");
-  }
-
-  return response.json(); // z.B. { id, name, email }
+  return parseResponse(response);
 }
