@@ -21,7 +21,7 @@ export function BackendStatusProvider({ children }) {
       }, 1800);
       let healthy = false;
       try {
-        const response = await fetch(`${apiConfig.origin}/health`, {
+        const response = await fetch(`${apiConfig.baseUrl}/health`, {
           cache: "no-store",
           signal: controller.signal,
         });
