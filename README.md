@@ -1,73 +1,89 @@
-# Evendule — React frontend, integrated with Jan's Events API
+# Evendule | Events-App
 
-This repository is **a fork of the WBS Coding School team frontend**
-originally maintained by [DariaKozlova-web](https://github.com/DariaKozlova-web/events-frontend).
-It retains the team history, including commits from `jan-ninh` made in December 2025.
+**Events entdecken, erstellen und sich dafür anmelden.** Evendule ist eine React-Anwendung, die in einem WBS-Coding-School-Teamprojekt entstand und anschließend mit einer eigenen Express-/SQLite-API zu einer durchgängigen Fullstack-Anwendung weiterentwickelt wurde.
 
-The **new integration branch** is Jan's later AI-assisted follow-up:
-[feature/own-backend-integration](https://github.com/jan-ninh/events-frontend/tree/feature/own-backend-integration).
+**[Backend & SQL ansehen](https://github.com/jan-ninh/events-api-jan)** · **[Frontend-Code ansehen](https://github.com/jan-ninh/events-frontend/tree/main/src)**
 
-## What is new in the integration branch?
+![Evendule: erfolgreich für ein Event angemeldet](docs/screenshots/registration-confirmed.webp)
 
-- Local Vite proxy sends `/api` requests to Jan's own Express/SQLite backend
-- Signup/login updated for new backend response contracts
-- Session verification on reload via `/api/auth/profile`
-- Authenticated event creation, persisted in Jan's SQLite database
-- Event detail and listing display SQLite-backed records
-- User can register for an event, with session-bound identity and duplicate registration protection
+*Echte Aufnahme aus der lokalen Anwendung: Der angemeldete Benutzer hat sich für das Event registriert. Die vollständige Frontend-Backend-Verbindung wurde zusätzlich im Browser durchgespielt.*
 
-**Backend repository:** [jan-ninh/events-api-jan](https://github.com/jan-ninh/events-api-jan).
-The backend is an independently implemented local learning project, not a copy of the WBS API. Check its project-provenance notes for attribution.
+## Das kann die App
 
-## Run locally (two terminals)
+- **Benutzerkonto:** Registrierung, Login und Wiederherstellung einer vorhandenen Sitzung beim Neuladen.
+- **Events:** Veranstaltungen anlegen, chronologisch anzeigen und im Detail öffnen.
+- **Teilnahme:** Per Klick für eine Veranstaltung registrieren und den Anmeldestatus wieder abrufen.
+- **Konsistente Verarbeitung:** Eine doppelte Anmeldung wird durch einen eindeutigen Datenbankschlüssel verhindert.
+- **REST-Integration:** Das React-Frontend kommuniziert mit einer eigenständig aufgebauten Node.js-/Express-API und einer relationalen SQLite-Datenbank.
 
-Requirements: Node.js 22.13+; Git; npm. This is a local demo, **not a public deployment**.
+## Technologien
 
-**Terminal 1 — Backend**
+| Frontend | Backend & Datenhaltung |
+| --- | --- |
+| React 19, JavaScript/JSX | Node.js, Express 5 |
+| React Router, Vite | SQLite, SQL, `node:sqlite` |
+| Tailwind CSS, DaisyUI | REST-API, passwortbasierte Anmeldung |
+| React Leaflet für optionale Karten | Session-Tokens, Fremdschlüssel, SQL-Constraints |
+
+## Architektur
+
+```mermaid
+flowchart LR
+    A[React / Vite] -->|/api über Vite-Proxy| B[Express REST API]
+    B --> C[(SQLite)]
+    B --> D[Login / Sessions]
+    D --> C
+```
+
+Das Frontend spricht die API unter `/api` an. Während der lokalen Entwicklung leitet Vite diese Requests an `http://127.0.0.1:3001` weiter. Dadurch bleiben React-App und Backend sauber getrennt, ohne im Browser eine direkte Cross-Origin-Verbindung konfigurieren zu müssen.
+
+## Lokal starten
+
+Voraussetzungen: Node.js **ab 22.13**, npm und Git. Das Backend und das Frontend laufen in zwei separaten Terminals.
+
+**Terminal 1: Backend**
 
 ```bash
-git clone -b feature/event-registration https://github.com/jan-ninh/events-api-jan.git
+git clone https://github.com/jan-ninh/events-api-jan.git
 cd events-api-jan
 npm ci
 npm test
 npm start
 ```
 
-API: `http://127.0.0.1:3001/health`. The backend repository must be accessible to you.
+Das Backend läuft unter `http://127.0.0.1:3001`. Der Aufruf von `/health` liefert `{"status":"ok"}`.
 
-**Terminal 2 — Frontend**
+**Terminal 2: Frontend**
 
 ```bash
-git clone -b feature/own-backend-integration https://github.com/jan-ninh/events-frontend.git
+git clone https://github.com/jan-ninh/events-frontend.git
 cd events-frontend
 npm ci
 npm run dev
 ```
 
-Open the Vite URL printed in terminal 2 (usually `http://localhost:5173`).
-The Vite proxy forwards relative `/api` calls to the locally running backend.
-Do **not** set `VITE_API_BASE_URL` to the old WBS or Daria backend. An existing
-`.env` file can override the default `/api` path.
+Dann die im Terminal angegebene Vite-Adresse öffnen (normalerweise `http://localhost:5173`).
 
-## Test the full integration manually
+Es ist keine externe Datenbank erforderlich. Die SQLite-Datei wird lokal erzeugt. Ein eventuell vorhandenes `.env` mit `VITE_API_BASE_URL` sollte für diesen Ablauf entfernt beziehungsweise auf `/api` gesetzt werden.
 
-1. Visit **Sign Up**. Enter name, email and a password of at least 12 characters.
-2. On success you are signed in and returned to the home page.
-3. Click **Create Event**, enter title, date and location, optionally a description.
-4. You should arrive on the **Event Details** page showing the saved data.
-5. Click **Register for this event**. You should see a confirmed registration.
-6. Refresh the browser. Session and registration state should still be recognized.
-7. Sign out and back in, and verify you can still view the event.
+## Ablauf ausprobieren
 
-The API is a local portfolio prototype. Public server deployment requires further
-security work (login throttling, organizer roles, session lifecycle, migrations, privacy).
+1. Ein Testkonto mit Name, E-Mail und einem Passwort ab zwölf Zeichen anlegen.
+2. Einloggen und ein neues Event mit Titel, Datum, Ort und Beschreibung erstellen.
+3. Die Event-Detailseite öffnen und **Register for this event** auswählen.
+4. Die Seite neu laden. Der persönliche Anmeldestatus bleibt erkennbar.
+5. Abmelden, wieder anmelden und das Event erneut öffnen.
 
-## Ownership and claims
+Die Vorgänge werden im eigenen SQLite-Backend gespeichert. Die Anmeldung wird an die authentifizierte Teilnehmeridentität gebunden, nicht an eine frei wählbare Teilnehmer-ID aus dem Browser.
 
-The UI originated in the WBS team project. The fork does **not** mean all UI code
-was authored by Jan. The December 2025 Git commits evidence his actual team
-contributions. The newer integration work and independent backend are separate
-AI-assisted, user-reviewed improvements. Read the individual commits to distinguish them.
+## Entwicklung und eigene Beiträge
 
-Current frontend is **React and JavaScript (JSX)**, not a TypeScript frontend.
-The linked backend is **Node.js/Express and SQLite (JavaScript)**.
+**WBS-Teamprojekt (2025):** Das ursprüngliche React-Frontend entstand im Team. Beiträge von Jan Ninh an Event-Erstellung, Routing und API-Integration sind in der gemeinsamen [Commit-Historie](https://github.com/DariaKozlova-web/events-frontend/commits/main/) nachvollziehbar.
+
+**Fullstack-Weiterentwicklung (2026):** Das Frontend wurde mit einer separaten Express-/SQLite-Implementierung verbunden. Dazu gehören die Anpassung der Login-/Signup-Schnittstellen, der Session-Prüfung, der Event-Erstellung und der Teilnahmeansicht. Das neue Backend mit SQL-Datenmodell, REST-Routen, Authentifizierung und automatisierten Tests ist im [zugehörigen Repository](https://github.com/jan-ninh/events-api-jan) dokumentiert. Die Weiterentwicklung erfolgte mit KI-Unterstützung und eigener Prüfung der implementierten Funktionen.
+
+## Projektstatus
+
+**Lokal lauffähige Fullstack-Arbeitsprobe.** Der Frontend-Build und die Backend-Tests werden über GitHub Actions überprüft. Die Kernabläufe wurden in der lokalen Browseranwendung getestet. Ein öffentlich betriebener Server ist derzeit nicht Teil dieser Demo.
+
+Die ursprüngliche Teamarbeit bleibt durch den [Fork von Darias Repository](https://github.com/DariaKozlova-web/events-frontend) und seine Git-Historie transparent zugeordnet.
