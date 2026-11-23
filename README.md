@@ -6,24 +6,24 @@
 
 **[Backend & SQL ansehen](https://github.com/jan-ninh/events-api-jan)** · **[Frontend-Code ansehen](https://github.com/jan-ninh/events-frontend/tree/main/src)**
 
-![Evendule – Eventdetails mit bestätigter Anmeldung und Karte](docs/screenshots/02-anmeldung-mit-karte.webp)
+![Evendule – Startseite mit drei Demo-Events, Sortierung und unterschiedlichen Eventbildern](docs/screenshots/evendule-home.webp)
 
-*Eventdetailseite mit erfolgreicher Teilnehmeranmeldung und interaktiver Karte. Screenshot aus der lokal getesteten Fullstack-App mit Demo-Account.*
+*Evendule im Browser: Eventübersicht mit Sortierung, individuellen Bildmotiven und drei Beispielveranstaltungen.*
 
 ## Das kann die App
 
 - **Benutzerkonto:** Registrierung, Login und Wiederherstellung einer vorhandenen Sitzung beim Neuladen.
-- **Events:** Veranstaltungen anlegen, chronologisch anzeigen, im Detail öffnen und als Ersteller wieder löschen.
+- **Events:** Veranstaltungen anlegen, im Detail öffnen, nach Event- oder Erstellungsdatum sortieren und als Ersteller wieder löschen.
 - **Eventbilder:** Passende Bildkategorie beim Erstellen auswählen oder automatisch zwischen verschiedenen Motiven wechseln. Die Bilder stammen von [Unsplash](https://unsplash.com/license).
 - **Teilnahme:** Per Klick für eine Veranstaltung registrieren und den Anmeldestatus wieder abrufen.
 - **Konsistente Verarbeitung:** Eine doppelte Anmeldung wird durch einen eindeutigen Datenbankschlüssel verhindert.
 - **REST-Integration:** Das React-Frontend kommuniziert mit einer eigenständig aufgebauten Node.js-/Express-API und einer relationalen SQLite-Datenbank.
 
-### Event-Erstellung
+### Eventdetails und Anmeldung
 
-![Evendule – Formular zum Erstellen einer Veranstaltung](docs/screenshots/01-event-erstellen.webp)
+![Evendule – Eventdetails mit bestätigter Anmeldung und Karte](docs/screenshots/evendule-eventdetails.webp)
 
-*Neue Events mit Titel, Datum, Ort und Beschreibung anlegen. Die Daten werden über die REST-API in SQLite gespeichert.*
+*Eventdetailseite mit erfolgreicher Anmeldung, Beschreibung und Stadtkarte. Die Teilnehmeranmeldung wird über die Express-/SQLite-API verwaltet.*
 
 ## Technologien
 
